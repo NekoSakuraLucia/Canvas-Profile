@@ -22,7 +22,7 @@ const GithubProfileCanvas = () => {
 
             // ตั้งค่า Canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
             // พื้นหลังแบบ Gradient
             const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
             gradient.addColorStop(0, "#171717"); // สีเริ่มต้น
@@ -50,15 +50,29 @@ const GithubProfileCanvas = () => {
             profileImage.src = profile.avatar_url;
             profileImage.onload = () => {
                 // วาดรูปโปรไฟล์ในลักษณะวงกลม
-                const radius = 70;
+                const radius = 80;
                 const x = canvas.width - radius * 2 - 70;
-                const y = 50;
+                const y = 35;
 
+                // วาดเงาใต้รูปโปรไฟล์
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(x + radius, y + radius, radius + 5, 0, 2 * Math.PI);
+                ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+                ctx.fill();
+                ctx.restore();
+
+                // กรอปรูปโปรไฟล์
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(x + radius, y + radius, radius, 0, 2 * Math.PI);
+                ctx.strokeStyle = "#FFC0CB";
+                ctx.lineWidth = 5;
+                ctx.stroke();
                 ctx.closePath();
                 ctx.clip();
+
+                // วาดรูปโปรไฟล์
                 ctx.drawImage(profileImage, x, y, radius * 2, radius * 2);
                 ctx.restore();
             }

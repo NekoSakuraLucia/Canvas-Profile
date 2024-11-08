@@ -22,7 +22,12 @@ const GithubProfileCanvas = () => {
 
             // ตั้งค่า Canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#1A1A1A';
+            
+            // พื้นหลังแบบ Gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, "#171717"); // สีเริ่มต้น
+            gradient.addColorStop(1, "#0a0a0a"); // สีปลาย
+            ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // กำหนดค่าตัวอักษรและสี
@@ -37,6 +42,8 @@ const GithubProfileCanvas = () => {
             // แสดงสถานะ
             ctx.fillText(profile.bio || 'No bio available', 40, 120);
             ctx.fillText(`Public Repos: ${profile.public_repos || "No Public Repos"}`, 40, 150)
+            ctx.fillText(`Followers: ${profile.followers}`, 40, 180)
+            ctx.fillText(`Following: ${profile.following}`, 40, 210)
 
             // โหลดรูปโปรไฟล์และวาดลงบน Canvas
             const profileImage = new Image();
@@ -45,7 +52,7 @@ const GithubProfileCanvas = () => {
                 // วาดรูปโปรไฟล์ในลักษณะวงกลม
                 const radius = 70;
                 const x = canvas.width - radius * 2 - 70;
-                const y = 30;
+                const y = 50;
 
                 ctx.save();
                 ctx.beginPath();
@@ -68,7 +75,7 @@ const GithubProfileCanvas = () => {
                 className="w-full focus:outline-none text-white p-1.5 px-8 py-5 rounded-lg bg-neutral-700"
             />
             <button onClick={generateProfile} className="mt-5 p-3 text-white transition hover:bg-neutral-600 duration-200 shadow-sm shadow-black bg-neutral-700 px-8 rounded-xl">Generate Profile</button>
-            <canvas className="mt-8" ref={canvasRef} width={800} height={200} />
+            <canvas className="mt-8" ref={canvasRef} width={800} height={240} />
         </React.Fragment>
     )
 }

@@ -30,7 +30,7 @@ const GithubProfileCanvas = () => {
             ctx.fillStyle = '#FFC0CB'; // สีชมพูสำหรับชื่อ
 
             // แสดงชื่อผู้ใช้
-            ctx.fillText(profile.name || 'N/A', 40, 80);
+            ctx.fillText(`${profile.name || "N/A"} (${profile.login || "N/A"})`, 40, 80);
             ctx.font = '18px Arial';
             ctx.fillStyle = '#CCCCCC'; // สีเทาสำหรับรายละเอียด
 
@@ -43,13 +43,16 @@ const GithubProfileCanvas = () => {
             profileImage.src = profile.avatar_url;
             profileImage.onload = () => {
                 // วาดรูปโปรไฟล์ในลักษณะวงกลม
-                const radius = 50;
+                const radius = 70;
+                const x = canvas.width - radius * 2 - 70;
+                const y = 30;
+
                 ctx.save();
                 ctx.beginPath();
-                ctx.arc(250, 80, radius, 0, 2 * Math.PI);
+                ctx.arc(x + radius, y + radius, radius, 0, 2 * Math.PI);
                 ctx.closePath();
                 ctx.clip();
-                ctx.drawImage(profileImage, 200, 30, radius * 2, radius * 2);
+                ctx.drawImage(profileImage, x, y, radius * 2, radius * 2);
                 ctx.restore();
             }
         }
@@ -65,7 +68,7 @@ const GithubProfileCanvas = () => {
                 className="w-full focus:outline-none text-white p-1.5 px-8 py-5 rounded-lg bg-neutral-700"
             />
             <button onClick={generateProfile} className="mt-5 p-3 text-white transition hover:bg-neutral-600 duration-200 shadow-sm shadow-black bg-neutral-700 px-8 rounded-xl">Generate Profile</button>
-            <canvas ref={canvasRef} width={800} height={200} />
+            <canvas className="mt-8" ref={canvasRef} width={800} height={200} />
         </React.Fragment>
     )
 }

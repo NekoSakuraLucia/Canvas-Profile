@@ -94,7 +94,7 @@ const GithubProfileCanvas = () => {
                 // วาดรูปโปรไฟล์
                 ctx.drawImage(profileImage, x, y, radius * 2, radius * 2);
                 ctx.restore();
-            }
+            };
 
             if (activities.length > 0) {
                 const lineHeight = 20; // ระยะห่างระหว่างเส้นแต่ละเส้น
@@ -110,28 +110,67 @@ const GithubProfileCanvas = () => {
 
                 const maxActivityCount = Math.max(...Object.values(activityCounts));
 
-                // วาดกราฟเส้น
+                // วาดแค่เส้นที่มีแอนิเมชั่น
                 const types = Object.keys(activityCounts);
+                let animationProgress = {};
+                let startTime = performance.now(); //  เวลาที่เริ่มต้นการแอนิเมชั่น
+
+                // เตรียมค่าความคืบหน้าของการแอนิเมชั่น
+                types.forEach((type) => {
+                    animationProgress[type] = 0; // เริ่มต้นที่ 0
+                });
+
+                const easeInOut = (t) => {
+                    return t < 0.5 ? 2 * t : -1 + (4 - 2 * t) * t;
+                };
+
+                const animateGraph = () => {
+                    const elapsedTime = performance.now() - startTime;
+                    const duration = 1000; // กำหนด duration (1 วินาที)
+                    let allComplete = true;
+
+                    const progress = Math.min(elapsedTime / duration, 1); // คำนวณความคืบหน้าของแอนิเมชั่น
+                    const easedProgress = easeInOut(progress); // ใช้ ease
+
+                    types.forEach((type, index) => {
+                        const count = activityCounts[type];
+                        const lineWidth = (count / maxActivityCount) * maxLineWidth; // ความยาวของเส้นตามค่าความถี่
+                        const yOffset = graphY + (index * (lineHeight + 10));
+
+                        // วาดเส้นสีเทา (เส้นจำนวนเต็มของระดับกิจกรรม)
+                        ctx.beginPath();
+                        ctx.moveTo(graphX, yOffset);
+                        ctx.lineTo(graphX + maxLineWidth, yOffset); // ใช้ความยาวเต็มของกราฟ
+                        ctx.strokeStyle = "#262626";
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        // วาดเส้นสีชมพู (เส้นจำนวน Counts) โดยให้ความยาวเพิ่มขึ้นตามความคืบหน้า
+                        const currentLineWidth = lineWidth * easedProgress;
+                        ctx.beginPath();
+                        ctx.moveTo(graphX, yOffset);
+                        ctx.lineTo(graphX + currentLineWidth, yOffset);
+                        ctx.strokeStyle = selectedColor; // สีชมพูสำหรับเส้น (ค่าเริ่มต้นสีชมพู)
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+
+                        // อัพเดตค่าความคืบหน้า
+                        if (progress < 1) {
+                            allComplete = false;
+                        }
+                    });
+
+                    if (!allComplete) {
+                        requestAnimationFrame(animateGraph); // เรียกฟังก์ชันตัวเองเพื่อทำให้แอนิเมชั่นดำเนินต่อไป
+                    }
+                };
+
+                animateGraph(); // เริ่มการแอนิเมชั่น
+
+                // แสดงชื่อประเภทกิจกรรมทางด้านซ้ายและตัวเลขค่าความถี่ทางขวาของเส้น
                 types.forEach((type, index) => {
                     const count = activityCounts[type];
-                    const lineWidth = (count / maxActivityCount) * maxLineWidth; // ความยาวของเส้นตามค่าความถี่
                     const yOffset = graphY + (index * (lineHeight + 10));
-
-                    // วาดเส้นสีเทา (เส้นจำนวนเต็มของระดับกิจกรรม)
-                    ctx.beginPath();
-                    ctx.moveTo(graphX, yOffset);
-                    ctx.lineTo(graphX + maxLineWidth, yOffset); // ใช้ความยาวเต็มของกราฟ
-                    ctx.strokeStyle = "#262626";
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-
-                    // วาดเส้นสีชมพู (เส้นจำนวน Counts)
-                    ctx.beginPath();
-                    ctx.moveTo(graphX, yOffset);
-                    ctx.lineTo(graphX + lineWidth, yOffset); // ใช้ความยาวตามจำนวน Counts
-                    ctx.strokeStyle = selectedColor; // สีชมพูสำหรับเส้น (ค่าเริ่มต้นสีชมพู)
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
 
                     // แสดงชื่อประเภทกิจกรรมทางด้านซ้าย
                     ctx.fillStyle = '#FFFFFF';
@@ -164,7 +203,7 @@ const GithubProfileCanvas = () => {
                     onChange={(e) => setSelectedColor(e.target.value)}
                 />
             </div>
-            <canvas className="mt-8" ref={canvasRef} width={800} height={400} />
+            <canvas className="mt-8" ref={canvasRef} width={1000} height={400} />
         </React.Fragment>
     )
 }

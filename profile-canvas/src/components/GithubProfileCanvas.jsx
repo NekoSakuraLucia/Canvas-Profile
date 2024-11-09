@@ -6,6 +6,7 @@ const GithubProfileCanvas = () => {
     const [profile, setProfile] = useState(null);
     const [activities, setActivities] = useState([]);
     const [username, setUsername] = useState("");
+    const [selectedColor, setSelectedColor] = useState("#FFC0CB");
 
     const generateProfile = async () => {
         try {
@@ -50,7 +51,7 @@ const GithubProfileCanvas = () => {
 
             // กำหนดค่าตัวอักษรและสี
             ctx.font = 'bold 24px Arial';
-            ctx.fillStyle = '#FFC0CB'; // สีชมพูสำหรับชื่อ
+            ctx.fillStyle = selectedColor; // สีชมพูสำหรับชื่อ (ค่าเริ่มต้นสีชมพู)
 
             // แสดงชื่อผู้ใช้
             ctx.fillText(`${profile.name || "N/A"} (${profile.login || "N/A"})`, 40, 80);
@@ -59,9 +60,9 @@ const GithubProfileCanvas = () => {
 
             // แสดงสถานะ
             ctx.fillText(profile.bio || 'No bio available', 40, 120);
-            ctx.fillText(`Public Repos: ${profile.public_repos || "No Public Repos"}`, 40, 150)
-            ctx.fillText(`Followers: ${profile.followers}`, 40, 180)
-            ctx.fillText(`Following: ${profile.following}`, 40, 210)
+            ctx.fillText(`Public Repos: ${profile.public_repos || "No Public Repos"}`, 40, 150);
+            ctx.fillText(`Followers: ${profile.followers}`, 40, 180);
+            ctx.fillText(`Following: ${profile.following}`, 40, 210);
 
             // โหลดรูปโปรไฟล์และวาดลงบน Canvas
             const profileImage = new Image();
@@ -84,7 +85,7 @@ const GithubProfileCanvas = () => {
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(x + radius, y + radius, radius, 0, 2 * Math.PI);
-                ctx.strokeStyle = "#FFC0CB";
+                ctx.strokeStyle = selectedColor; // สีชมพูสำหรับกรอปรูปโปรไฟล์ (ค่าเริ่มต้นสีชมพู)
                 ctx.lineWidth = 5;
                 ctx.stroke();
                 ctx.closePath();
@@ -128,7 +129,7 @@ const GithubProfileCanvas = () => {
                     ctx.beginPath();
                     ctx.moveTo(graphX, yOffset);
                     ctx.lineTo(graphX + lineWidth, yOffset); // ใช้ความยาวตามจำนวน Counts
-                    ctx.strokeStyle = "#FFC0CB"; // สีชมพูสำหรับเส้น
+                    ctx.strokeStyle = selectedColor; // สีชมพูสำหรับเส้น (ค่าเริ่มต้นสีชมพู)
                     ctx.lineWidth = 3;
                     ctx.stroke();
 
@@ -142,7 +143,7 @@ const GithubProfileCanvas = () => {
                 });
             }
         }
-    }, [profile, activities])
+    }, [profile, activities, selectedColor]);
 
     return (
         <React.Fragment>
@@ -154,6 +155,15 @@ const GithubProfileCanvas = () => {
                 className="w-full focus:outline-none text-white p-1.5 px-8 py-5 rounded-lg bg-neutral-700"
             />
             <button onClick={generateProfile} className="mt-5 p-3 text-white transition hover:bg-neutral-600 duration-200 shadow-sm shadow-black bg-neutral-700 px-8 rounded-xl">Generate Profile</button>
+            <div className="mt-5">
+                <label htmlFor="colorPicker" className="text-white mr-2">Choose Graph Color</label>
+                <input
+                    type="color"
+                    id="colorPicker"
+                    value={selectedColor}
+                    onChange={(e) => setSelectedColor(e.target.value)}
+                />
+            </div>
             <canvas className="mt-8" ref={canvasRef} width={800} height={400} />
         </React.Fragment>
     )

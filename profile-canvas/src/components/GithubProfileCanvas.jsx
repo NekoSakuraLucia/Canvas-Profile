@@ -116,10 +116,18 @@ const GithubProfileCanvas = () => {
                     const lineWidth = (count / maxActivityCount) * maxLineWidth; // ความยาวของเส้นตามค่าความถี่
                     const yOffset = graphY + (index * (lineHeight + 10));
 
-                    // วาดเส้นแนวนอนสำหรับแต่ละประเภท
+                    // วาดเส้นสีเทา (เส้นจำนวนเต็มของระดับกิจกรรม)
                     ctx.beginPath();
                     ctx.moveTo(graphX, yOffset);
-                    ctx.lineTo(graphX + lineWidth, yOffset);
+                    ctx.lineTo(graphX + maxLineWidth, yOffset); // ใช้ความยาวเต็มของกราฟ
+                    ctx.strokeStyle = "#262626";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // วาดเส้นสีชมพู (เส้นจำนวน Counts)
+                    ctx.beginPath();
+                    ctx.moveTo(graphX, yOffset);
+                    ctx.lineTo(graphX + lineWidth, yOffset); // ใช้ความยาวตามจำนวน Counts
                     ctx.strokeStyle = "#FFC0CB"; // สีชมพูสำหรับเส้น
                     ctx.lineWidth = 3;
                     ctx.stroke();
@@ -130,7 +138,7 @@ const GithubProfileCanvas = () => {
                     ctx.fillText(type, graphX - 80, yOffset + 5);
 
                     // แสดงตัวเลขค่าความถี่ทางขวาของเส้น
-                    ctx.fillText(count, graphX + lineWidth + 10, yOffset + 5);
+                    ctx.fillText(count, graphX + maxLineWidth + 10, yOffset + 5);
                 });
             }
         }

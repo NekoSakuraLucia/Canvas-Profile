@@ -22,7 +22,8 @@ const GithubProfileCanvas = () => {
                 try {
                     const response = await fetch(`${GITUHB_API_BASE_URL}/users/${profile.login}/events/public`)
                     const data = await response.json();
-                    setActivities(data.slice(0, 5));
+                    const filteredActivites = data.slice(0, 20);
+                    setActivities(filteredActivites);
                 } catch (error) {
                     console.error("Error fetching Github Activites", error)
                 }
@@ -95,27 +96,41 @@ const GithubProfileCanvas = () => {
             }
 
             if (activities.length > 0) {
-                const progressBarHeight = 30;
-                const barX = 40;
-                const barY = 240;
-                const barWidth = canvas.width - 80;
-                const maxActivities = 5; // จำนวนกิจกรรมที่เราดึงมาแสดง
+                const lineHeight = 20; // ระยะห่างระหว่างเส้นแต่ละเส้น
+                const maxLineWidth = canvas.width - 160; // กำหนดความกว้างของกราฟ
+                const graphX = 100; // ตำแหน่ง X เริ่มต้น
+                const graphY = 260; // ตำแหน่ง Y เริ่มต้น
 
-                activities.forEach((activity, index) => {
-                    const progress = (index + 1) / maxActivities * 100; // คำนวณค่าความคืบหน้า
-                    const yOffset = barY + (index * (progressBarHeight + 10));
+                // คำนวณค่าความถี่ของกิจกรรมแต่ละประเภท
+                const activityCounts = activities.reduce((counts, activity) => {
+                    counts[activity.type] = (counts[activity.type] || 0) + 1;
+                    return counts;
+                }, {});
 
-                    // วาด Progress Bar
-                    ctx.fillStyle = '#171717';
-                    ctx.fillRect(barX, yOffset, barWidth, progressBarHeight); // พื้นหลังของ Progress Bar
+                const maxActivityCount = Math.max(...Object.values(activityCounts));
 
-                    ctx.fillStyle = '#212121'; // สีของ Progress
-                    ctx.fillRect(barX, yOffset, (progress / 100) * barWidth, progressBarHeight); // สีของ Progress ตามค่าความคืบหน้า
+                // วาดกราฟเส้น
+                const types = Object.keys(activityCounts);
+                types.forEach((type, index) => {
+                    const count = activityCounts[type];
+                    const lineWidth = (count / maxActivityCount) * maxLineWidth; // ความยาวของเส้นตามค่าความถี่
+                    const yOffset = graphY + (index * (lineHeight + 10));
 
-                    // แสดงข้อความภายใน Progress Bar
+                    // วาดเส้นแนวนอนสำหรับแต่ละประเภท
+                    ctx.beginPath();
+                    ctx.moveTo(graphX, yOffset);
+                    ctx.lineTo(graphX + lineWidth, yOffset);
+                    ctx.strokeStyle = "#FFC0CB"; // สีชมพูสำหรับเส้น
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    // แสดงชื่อประเภทกิจกรรมทางด้านซ้าย
                     ctx.fillStyle = '#FFFFFF';
                     ctx.font = '14px Arial';
-                    ctx.fillText(`${activity.type}`, barX + 10, yOffset + progressBarHeight / 2 + 5);
+                    ctx.fillText(type, graphX - 80, yOffset + 5);
+
+                    // แสดงตัวเลขค่าความถี่ทางขวาของเส้น
+                    ctx.fillText(count, graphX + lineWidth + 10, yOffset + 5);
                 });
             }
         }

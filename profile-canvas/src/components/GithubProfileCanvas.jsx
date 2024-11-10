@@ -35,152 +35,166 @@ const GithubProfileCanvas = () => {
     }, [profile]);
 
     useEffect(() => {
+        // เริ่มการทำงานของ useEffect เมื่อ profile ถูกโหลดหรือมีการเปลี่ยนแปลง
         if (profile) {
             const canvas = canvasRef.current;
             const ctx = canvas.getContext('2d');
+            let animationFrameId;
 
-            // ตั้งค่า Canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // พื้นหลังแบบ Gradient
-            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            gradient.addColorStop(0, "#171717"); // สีเริ่มต้น
-            gradient.addColorStop(1, "#0a0a0a"); // สีปลาย
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // กำหนดค่าตัวอักษรและสี
-            ctx.font = 'bold 24px Arial';
-            ctx.fillStyle = selectedColor; // สีชมพูสำหรับชื่อ (ค่าเริ่มต้นสีชมพู)
-
-            // แสดงชื่อผู้ใช้
-            ctx.fillText(`${profile.name || "N/A"} (${profile.login || "N/A"})`, 40, 80);
-            ctx.font = '18px Arial';
-            ctx.fillStyle = '#CCCCCC'; // สีเทาสำหรับรายละเอียด
-
-            // แสดงสถานะ
-            ctx.fillText(profile.bio || 'No bio available', 40, 120);
-            ctx.fillText(`Public Repos: ${profile.public_repos || "No Public Repos"}`, 40, 150);
-            ctx.fillText(`Followers: ${profile.followers}`, 40, 180);
-            ctx.fillText(`Following: ${profile.following}`, 40, 210);
-
-            // โหลดรูปโปรไฟล์และวาดลงบน Canvas
-            const profileImage = new Image();
-            profileImage.src = profile.avatar_url;
-            profileImage.onload = () => {
-                // วาดรูปโปรไฟล์ในลักษณะวงกลม
-                const radius = 80;
-                const x = canvas.width - radius * 2 - 70;
-                const y = 35;
-
-                // วาดเงาใต้รูปโปรไฟล์
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(x + radius, y + radius, radius + 5, 0, 2 * Math.PI);
-                ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-                ctx.fill();
-                ctx.restore();
-
-                // กรอปรูปโปรไฟล์
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(x + radius, y + radius, radius, 0, 2 * Math.PI);
-                ctx.strokeStyle = selectedColor; // สีชมพูสำหรับกรอปรูปโปรไฟล์ (ค่าเริ่มต้นสีชมพู)
-                ctx.lineWidth = 5;
-                ctx.stroke();
-                ctx.closePath();
-                ctx.clip();
-
-                // วาดรูปโปรไฟล์
-                ctx.drawImage(profileImage, x, y, radius * 2, radius * 2);
-                ctx.restore();
+            // ฟังก์ชันเคลียร์แคนวาส
+            const clearCanvas = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
             };
 
-            if (activities.length > 0) {
-                const lineHeight = 20; // ระยะห่างระหว่างเส้นแต่ละเส้น
-                const maxLineWidth = canvas.width - 160; // กำหนดความกว้างของกราฟ
-                const graphX = 100; // ตำแหน่ง X เริ่มต้น
-                const graphY = 260; // ตำแหน่ง Y เริ่มต้น
+            // ฟังก์ชันวาดพื้นหลังด้วยสีไล่เฉด
+            const drawBackground = () => {
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                gradient.addColorStop(0, "#171717");
+                gradient.addColorStop(1, "#0a0a0a");
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            };
 
-                // คำนวณค่าความถี่ของกิจกรรมแต่ละประเภท
+            // ฟังก์ชันวาดข้อมูลโปรไฟล์
+            const drawProfileInfo = () => {
+                ctx.font = 'bold 24px Arial';
+                ctx.fillStyle = selectedColor;
+                ctx.fillText(`${profile.name || "N/A"} (${profile.login || "N/A"})`, 40, 80);
+
+                ctx.font = '18px Arial';
+                ctx.fillStyle = '#CCCCCC';
+                ctx.fillText(profile.bio || 'No bio available', 40, 120);
+                ctx.fillText(`Public Repos: ${profile.public_repos || "No Public Repos"}`, 40, 150);
+                ctx.fillText(`Followers: ${profile.followers}`, 40, 180);
+                ctx.fillText(`Following: ${profile.following}`, 40, 210);
+            };
+
+            // ฟังก์ชันวาดรูปภาพโปรไฟล์
+            const drawProfileImage = () => {
+                const profileImage = new Image();
+                profileImage.src = profile.avatar_url;
+
+                profileImage.onload = () => {
+                    const radius = 80;
+                    const x = canvas.width - radius * 2 - 70;
+                    const y = 35;
+
+                    // วาดเงาของกรอบโปรไฟล์
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(x + radius, y + radius, radius + 5, 0, 2 * Math.PI);
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+                    ctx.fill();
+                    ctx.restore();
+
+                    // วาดกรอบวงกลมและรูปภาพโปรไฟล์
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(x + radius, y + radius, radius, 0, 2 * Math.PI);
+                    ctx.strokeStyle = selectedColor;
+                    ctx.lineWidth = 5;
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.clip();
+
+                    ctx.drawImage(profileImage, x, y, radius * 2, radius * 2);
+                    ctx.restore();
+                };
+
+                profileImage.onerror = () => {
+                    console.error("Failed to load profile image.");
+                };
+            };
+
+            // ฟังก์ชันวาดกราฟข้อมูลการทำกิจกรรม
+            const drawGraph = () => {
+                const lineHeight = 20;
+                const maxLineWidth = canvas.width - 160;
+                const graphX = 100;
+                const graphY = 260;
+
+                // คำนวณจำนวนการทำกิจกรรมแต่ละประเภท
                 const activityCounts = activities.reduce((counts, activity) => {
                     counts[activity.type] = (counts[activity.type] || 0) + 1;
                     return counts;
                 }, {});
 
                 const maxActivityCount = Math.max(...Object.values(activityCounts));
-
-                // วาดแค่เส้นที่มีแอนิเมชั่น
                 const types = Object.keys(activityCounts);
-                let animationProgress = {};
-                let startTime = performance.now(); //  เวลาที่เริ่มต้นการแอนิเมชั่น
+                let startTime = performance.now();
 
-                // เตรียมค่าความคืบหน้าของการแอนิเมชั่น
-                types.forEach((type) => {
-                    animationProgress[type] = 0; // เริ่มต้นที่ 0
-                });
-
+                // ฟังก์ชันคำนวณการเคลื่อนไหวแบบ easeInOut
                 const easeInOut = (t) => {
                     return t < 0.5 ? 2 * t : -1 + (4 - 2 * t) * t;
                 };
 
+                // ฟังก์ชันแอนิเมชั่นการวาดกราฟ
                 const animateGraph = () => {
                     const elapsedTime = performance.now() - startTime;
-                    const duration = 1000; // กำหนด duration (1 วินาที)
+                    const duration = 1000;
+                    const progress = Math.min(elapsedTime / duration, 1);
+                    const easedProgress = easeInOut(progress);
                     let allComplete = true;
 
-                    const progress = Math.min(elapsedTime / duration, 1); // คำนวณความคืบหน้าของแอนิเมชั่น
-                    const easedProgress = easeInOut(progress); // ใช้ ease
-
+                    // วาดแต่ละแถวของกราฟ
                     types.forEach((type, index) => {
                         const count = activityCounts[type];
-                        const lineWidth = (count / maxActivityCount) * maxLineWidth; // ความยาวของเส้นตามค่าความถี่
+                        const lineWidth = (count / maxActivityCount) * maxLineWidth;
                         const yOffset = graphY + (index * (lineHeight + 10));
 
-                        // วาดเส้นสีเทา (เส้นจำนวนเต็มของระดับกิจกรรม)
+                        // วาดเส้นสีเทาพื้นหลัง
                         ctx.beginPath();
                         ctx.moveTo(graphX, yOffset);
-                        ctx.lineTo(graphX + maxLineWidth, yOffset); // ใช้ความยาวเต็มของกราฟ
+                        ctx.lineTo(graphX + maxLineWidth, yOffset);
                         ctx.strokeStyle = "#262626";
                         ctx.lineWidth = 2;
                         ctx.stroke();
 
-                        // วาดเส้นสีชมพู (เส้นจำนวน Counts) โดยให้ความยาวเพิ่มขึ้นตามความคืบหน้า
+                        // วาดเส้นสีหลักที่เคลื่อนไหวตามข้อมูล
                         const currentLineWidth = lineWidth * easedProgress;
                         ctx.beginPath();
                         ctx.moveTo(graphX, yOffset);
                         ctx.lineTo(graphX + currentLineWidth, yOffset);
-                        ctx.strokeStyle = selectedColor; // สีชมพูสำหรับเส้น (ค่าเริ่มต้นสีชมพู)
+                        ctx.strokeStyle = selectedColor;
                         ctx.lineWidth = 3;
                         ctx.stroke();
 
-                        // อัพเดตค่าความคืบหน้า
                         if (progress < 1) {
                             allComplete = false;
                         }
                     });
 
+                    // เรียกการวาดแอนิเมชั่นซ้ำจนกว่าจะเสร็จสมบูรณ์
                     if (!allComplete) {
-                        requestAnimationFrame(animateGraph); // เรียกฟังก์ชันตัวเองเพื่อทำให้แอนิเมชั่นดำเนินต่อไป
+                        animationFrameId = requestAnimationFrame(animateGraph);
                     }
                 };
 
-                animateGraph(); // เริ่มการแอนิเมชั่น
+                animateGraph();
 
-                // แสดงชื่อประเภทกิจกรรมทางด้านซ้ายและตัวเลขค่าความถี่ทางขวาของเส้น
+                // วาดข้อความและจำนวนกิจกรรมในแต่ละประเภท
                 types.forEach((type, index) => {
                     const count = activityCounts[type];
                     const yOffset = graphY + (index * (lineHeight + 10));
 
-                    // แสดงชื่อประเภทกิจกรรมทางด้านซ้าย
                     ctx.fillStyle = '#FFFFFF';
                     ctx.font = '14px Arial';
                     ctx.fillText(type, graphX - 80, yOffset + 5);
-
-                    // แสดงตัวเลขค่าความถี่ทางขวาของเส้น
                     ctx.fillText(count, graphX + maxLineWidth + 10, yOffset + 5);
                 });
-            }
+            };
+
+            // เรียกฟังก์ชันวาดพื้นหลัง ข้อมูลโปรไฟล์ รูปภาพ และกราฟ
+            drawBackground();
+            drawProfileInfo();
+            drawProfileImage();
+            if (activities.length > 0) drawGraph();
+
+            // cleanup function: เคลียร์แอนิเมชั่นและแคนวาสเมื่อ component ถูกถอดออก
+            return () => {
+                cancelAnimationFrame(animationFrameId);
+                clearCanvas();
+            };
         }
     }, [profile, activities, selectedColor]);
 

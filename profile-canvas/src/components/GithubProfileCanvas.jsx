@@ -7,6 +7,8 @@ const GithubProfileCanvas = () => {
     const [activities, setActivities] = useState([]);
     const [username, setUsername] = useState("");
     const [selectedColor, setSelectedColor] = useState("#FFC0CB");
+    const [leftSideColor, setLeftSideColor] = useState("#171717")
+    const [rightSideColor, setRightSideColor] = useState("#0a0a0a")
 
     const generateProfile = async () => {
         try {
@@ -49,8 +51,8 @@ const GithubProfileCanvas = () => {
             // ฟังก์ชันวาดพื้นหลังด้วยสีไล่เฉด
             const drawBackground = () => {
                 const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-                gradient.addColorStop(0, "#171717");
-                gradient.addColorStop(1, "#0a0a0a");
+                gradient.addColorStop(0, leftSideColor);
+                gradient.addColorStop(1, rightSideColor);
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             };
@@ -216,6 +218,25 @@ const GithubProfileCanvas = () => {
                     value={selectedColor}
                     onChange={(e) => setSelectedColor(e.target.value)}
                 />
+            </div>
+            <div className="mt-8 flex flex-col">
+                <label htmlFor="colorPicker" className="text-white mr-2">Customize the background, Linear Gradient style</label>
+                <div className="flex flex-row items-center justify-center mt-8 gap-5">
+                    <input
+                        type="text"
+                        id="colorPicker"
+                        value={leftSideColor}
+                        onChange={(e) => setLeftSideColor(e.target.value)}
+                        className="p-1 py-2 bg-neutral-700 text-white hover:bg-neutral-800 transition duration-200 rounded px-2 focus:outline-none"
+                    />
+                    <input
+                        type="text"
+                        id="colorPicker"
+                        value={rightSideColor}
+                        onChange={(e) => setRightSideColor(e.target.value)}
+                        className="p-1 py-2 bg-neutral-700 text-white hover:bg-neutral-800 transition duration-200 rounded px-2 focus:outline-none"
+                    />
+                </div>
             </div>
             <canvas className="mt-8" ref={canvasRef} width={1000} height={400} />
         </React.Fragment>
